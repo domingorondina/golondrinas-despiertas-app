@@ -1,0 +1,15 @@
+{
+  "name": "golondrinas-despiertas",
+  "version": "1.0.0",
+  "description": "Despertador Parlante Golondrinas Despiertas",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js",
+    "deploy": "node deploy.js"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  }
+}
