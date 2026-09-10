@@ -2,7 +2,7 @@
 
 import { initStorage, getSavedAlarms, saveAlarms } from './storage.js';
 import { initTTS } from './tts.js';
-import { initAlarmEngine, updateEngineAlarms, scheduleSnooze } from './alarmEngine.js';
+import { initAlarmEngine, updateEngineAlarms, scheduleSnooze, requestNativeAlarmPermissions, syncNativeAlarms } from './alarmEngine.js';
 import { initUI, renderAlarmList, triggerRingingScreen, openEditor } from './ui.js';
 
 let currentAlarms = [];
@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentAlarms.push(snoozed);
         saveAlarms(currentAlarms);
         updateEngineAlarms(currentAlarms);
+        syncNativeAlarms(currentAlarms);
         renderAlarmList(currentAlarms, handleToggleAlarm, (a) => openEditor(a));
       },
       (dismissedAlarm) => {
@@ -100,6 +101,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     );
   });
+
+  // 7. Request Native Permissions & Sync with Android AlarmManager
+  await requestNativeAlarmPermissions();
+  await syncNativeAlarms(currentAlarms);
 });
 
 function handleSaveAlarm(updatedAlarm) {
@@ -128,5 +133,6 @@ function handleToggleAlarm(alarmId, active) {
 function persistAndRefresh() {
   saveAlarms(currentAlarms);
   updateEngineAlarms(currentAlarms);
+  syncNativeAlarms(currentAlarms);
   renderAlarmList(currentAlarms, handleToggleAlarm, (a) => openEditor(a));
 }
