@@ -1,4 +1,4 @@
-﻿name: Build Android APK
+name: Build Android APK
 
 on:
   push:
@@ -37,13 +37,11 @@ jobs:
       - name: Add Android Platform with Capacitor
         run: npx cap add android
 
+      - name: Inject Exact Alarm and WakeLock Permissions
+        run: node inject-permissions.js
+
       - name: Sync Capacitor Android
         run: npx cap sync android
-
-      - name: Inject Exact Alarm and WakeLock Permissions
-        run: |
-          sed -i '/<application/i \    <uses-permission android:name=\ android.permission.SCHEDULE_EXACT_ALARM\ />\n    <uses-permission android:name=\android.permission.USE_EXACT_ALARM\ />\n    <uses-permission android:name=\android.permission.WAKE_LOCK\ />\n    <uses-permission android:name=\android.permission.VIBRATE\ />\n    <uses-permission android:name=\android.permission.POST_NOTIFICATIONS\ />\n    <uses-permission android:name=\android.permission.USE_FULL_SCREEN_INTENT\ />\n    <uses-permission android:name=\android.permission.FOREGROUND_SERVICE\ />\n    <uses-permission android:name=\android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK\ />' android/app/src/main/AndroidManifest.xml
-          sed -i 's/<activity/<activity android:showWhenLocked=\true\ android:turnScreenOn=\true\ android:keepScreenOn=\true\/g' android/app/src/main/AndroidManifest.xml
 
       - name: Build Debug APK with Gradle
         run: |
