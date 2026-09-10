@@ -325,3 +325,94 @@ export function scheduleWakeUpCheck(alarm, onWakeUpCheckTrigger) {
     }
   }, 5 * 60 * 1000);
 }
+
+// --- NATIVE ANDROID ALARMMANAGER / CAPACITOR LOCAL NOTIFICATIONS BRIDGE ---
+function getCapacitorNotifications() {
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications) {
+    return window.Capacitor.Plugins.LocalNotifications;
+  }
+  return null;
+}
+
+export async function requestNativeAlarmPermissions() {
+  const ln = getCapacitorNotifications();
+  if (ln) {
+    try {
+      const status = await ln.checkPermissions();
+      if (status.display !== 'granted') {
+        await ln.requestPermissions();
+      }
+      if (ln.createChannel) {
+        await ln.createChannel({
+          id: 'alarm_channel_high',
+          name: 'Alarmas Golondrinas Despiertas',
+          description: 'Canal de maxima prioridad para despertar el telefono',
+          importance: 5,
+          visibility: 1,
+          sound: 'res_alarm.wav',
+          vibration: true
+        });
+      }
+    } catch (e) {
+      console.warn('Native permissions error:', e);
+    }
+  }
+}
+
+export async function syncNativeAlarms(alarms) {
+  const ln = getCapacitorNotifications();
+  if (!ln) return;
+
+  try {
+    const pending = await ln.getPending();
+    if (pending && pending.notifications && pending.notifications.length > 0) {
+      await ln.cancel({ notifications: pending.notifications });
+    }
+
+    const now = new Date();
+    const currentDay = now.getDay();
+    const mappedDay = currentDay === 0 ? 7 : currentDay;
+    const currentMinutesToday = now.getHours() * 60 + now.getMinutes();
+
+    const notificationsToSchedule = [];
+    let counterId = 100;
+
+    alarms.filter(a => a.active).forEach(alarm => {
+      const timeParts = (alarm.time || '07:30').split(':').map(Number);
+      const alarmMins = timeParts[0] * 60 + timeParts[1];
+      const days = (alarm.repeatDays && alarm.repeatDays.length > 0) ? alarm.repeatDays : [mappedDay];
+
+      days.forEach(day => {
+        let offset = (day - mappedDay + 7) % 7;
+        if (offset === 0 && alarmMins <= currentMinutesToday) {
+          offset = 7;
+        }
+
+        const targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset, timeParts[0], timeParts[1], 0, 0);
+
+        counterId++;
+        notificationsToSchedule.push({
+          id: counterId,
+          title: 'Alarma: ' + (alarm.label || 'Golondrinas Despiertas'),
+          body: alarm.vocalMsg || ('Son las ' + alarm.time + '. Hora de despertar.'),
+          schedule: {
+            at: targetDate,
+            allowWhileIdle: true,
+            repeats: alarm.repeatDays && alarm.repeatDays.length > 0
+          },
+          channelId: 'alarm_channel_high',
+          ongoing: true,
+          autoCancel: false,
+          extra: { alarmId: alarm.id, time: alarm.time }
+        });
+      });
+    });
+
+    if (notificationsToSchedule.length > 0) {
+      await ln.schedule({ notifications: notificationsToSchedule });
+      console.log(notificationsToSchedule.length + ' alarmas programadas en Android AlarmManager.');
+    }
+  } catch (err) {
+    console.warn('Error sincronizando alarmas nativas:', err);
+  }
+}
