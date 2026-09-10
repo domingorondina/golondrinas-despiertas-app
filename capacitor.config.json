@@ -1,0 +1,13 @@
+{
+  "appId": "com.domingorondina.golondrinasdespiertas",
+  "appName": "Golondrinas Despiertas",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#0b0e14",
+      "showSpinner": false
+    }
+  }
+}
