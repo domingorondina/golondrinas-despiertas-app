@@ -1,0 +1,19 @@
+{
+  "name": "Golondrinas Despiertas",
+  "short_name": "Golondrinas",
+  "description": "Despertador inteligente con alarmas parlantes, tonos personalizados y desafíos de despertar",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b0e14",
+  "theme_color": "#0b0e14",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='128' fill='%230b0e14'/><circle cx='256' cy='256' r='180' fill='none' stroke='%2300d2d3' stroke-width='24'/><path d='M256 120 v146 l90 52' stroke='%2300a8ff' stroke-width='28' stroke-linecap='round'/><path d='M160 90 L100 40 M352 90 L412 40' stroke='%2300d2d3' stroke-width='24' stroke-linecap='round'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
