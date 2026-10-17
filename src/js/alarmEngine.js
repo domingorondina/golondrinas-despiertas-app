@@ -304,12 +304,11 @@ export async function requestNativeAlarmPermissions() {
       }
       if (ln.createChannel) {
         await ln.createChannel({
-          id: 'alarm_channel_high',
+          id: 'alarm_channel_high_v2',
           name: 'Alarmas Golondrinas Despiertas',
-          description: 'Canal de maxima prioridad para despertar el telefono',
+          description: 'Canal de máxima prioridad para despertar el teléfono',
           importance: 5,
           visibility: 1,
-          sound: 'res_alarm.wav',
           vibration: true
         });
       }
@@ -379,7 +378,7 @@ export async function syncNativeAlarms(alarms) {
             allowWhileIdle: true,
             repeats: alarm.repeatDays && alarm.repeatDays.length > 0
           },
-          channelId: 'alarm_channel_high',
+          channelId: 'alarm_channel_high_v2',
           ongoing: true,
           autoCancel: false,
           extra: { alarmId: alarm.id, time: alarm.time }
