@@ -597,7 +597,7 @@ function createNewAlarmObj() {
     voiceIndex: 0,
     ringtone: 'xylophone',
     date: '',
-    repeatDays: [1, 2, 3, 4, 5],
+    repeatDays: [1, 2, 3, 4, 5, 6, 7],
     gradualVolume: true,
     vibrate: true,
     mission: 'none'
