@@ -244,55 +244,15 @@ function generateSilentWavDataUri(seconds = 5) {
 }
 
 function setupSilentAudioKeeper() {
-  try {
-    const silentUri = generateSilentWavDataUri(5);
-    silentAudioElement = new Audio(silentUri);
-    silentAudioElement.loop = true;
-    silentAudioElement.volume = 0.01;
-
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: 'Golondrinas Despiertas',
-        artist: 'Servicio de Alarma Activo',
-        album: 'Golondrinas Despiertas'
-      });
-    }
-  } catch (e) {
-    console.warn('Silent audio keeper error:', e);
-  }
+  // En app nativa con AlarmManager no se requiere audio continuo que secuestre el foco de Spotify
 }
 
 export function unlockAudioKeeper() {
-  if (!silentAudioElement) {
-    setupSilentAudioKeeper();
-  }
-  if (silentAudioElement) {
-    silentAudioElement.play().then(() => {
-      audioKeeperStarted = true;
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'playing';
-      }
-    }).catch(e => {
-      console.warn('Silent audio keeper gesture unlock failed:', e);
-    });
-  }
+  // Operación no-op para proteger la reproducción de música externa
 }
 
 export function keepSilentAudioAlive() {
-  const hasActiveAlarms = activeAlarms.some(a => a.active);
-  if (hasActiveAlarms && silentAudioElement) {
-    silentAudioElement.play().then(() => {
-      audioKeeperStarted = true;
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'playing';
-      }
-    }).catch(() => {});
-  } else if (!hasActiveAlarms && silentAudioElement) {
-    silentAudioElement.pause();
-    if ('mediaSession' in navigator) {
-      navigator.mediaSession.playbackState = 'none';
-    }
-  }
+  // Operación no-op para no pausar Spotify ni otras apps multimedia
 }
 
 // Schedule Snooze
@@ -353,6 +313,25 @@ export async function requestNativeAlarmPermissions() {
           vibration: true
         });
       }
+
+      // Escuchar cuando el sistema dispara la notificación o el usuario la toca para activar la alarma
+      ln.addListener('localNotificationReceived', (notification) => {
+        console.log('Notificación de alarma recibida en primer plano:', notification);
+        const alarmId = notification.extra ? notification.extra.alarmId : null;
+        const matchingAlarm = activeAlarms.find(a => a.id === alarmId);
+        if (matchingAlarm && onAlarmTriggerCallback) {
+          onAlarmTriggerCallback(matchingAlarm);
+        }
+      });
+
+      ln.addListener('localNotificationActionPerformed', (action) => {
+        console.log('Notificación de alarma accionada / abierta:', action);
+        const alarmId = action.notification && action.notification.extra ? action.notification.extra.alarmId : null;
+        const matchingAlarm = activeAlarms.find(a => a.id === alarmId);
+        if (matchingAlarm && onAlarmTriggerCallback) {
+          onAlarmTriggerCallback(matchingAlarm);
+        }
+      });
     } catch (e) {
       console.warn('Native permissions error:', e);
     }
